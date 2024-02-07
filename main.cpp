@@ -18,7 +18,13 @@ int main(int argc, char *argv[]) {
     return -2;
   }
 
-  vsp_solver::VSPSolver vsp_solver;
+  vsp_solver::VSPSolver vsp_solver(500, 720);
   vsp_solver.load_data(file);
+  auto solution = vsp_solver.solve();
+  // for (auto &route : solution) {
+  //   std::cout << vsp_solver.calculate_route_minutes(route) << std::endl;
+  // }
+  vsp_solver.print_solution(solution);
+  // std::cout << vsp_solver.calculate_total_minutes(solution) << std::endl;
   return 0;
 }
