@@ -2,7 +2,7 @@
 #include <fstream>
 #include <vector>
 
-namespace vsp_solver {
+namespace vrp_solver {
 
 const Point ZeroPoint = Point(0, 0);
 
@@ -22,22 +22,23 @@ struct PointPairSavings {
   double savings;
 };
 
-class VSPSolver {
+class VRPSolver {
   std::vector<Load> loads;
   int cost_per_driver;
   int max_driver_minutes;
 
 public:
-  VSPSolver(int cost_per_driver, int max_driver_minutes) {
+  VRPSolver(int cost_per_driver, int max_driver_minutes) {
     this->cost_per_driver = cost_per_driver;
     this->max_driver_minutes = max_driver_minutes;
   }
   void load_data(std::fstream &);
-  int total_cost(int number_of_drivers, int total_number_of_driven_minutes);
+  double total_cost(int number_of_drivers,
+                    double total_number_of_driven_minutes);
   double calculate_total_minutes(const std::vector<std::vector<int>> &);
   double calculate_route_minutes(const std::vector<int> &);
   std::vector<std::vector<int>> solve();
   void print_solution(const std::vector<std::vector<int>> &);
 };
 
-} // namespace vsp_solver
+} // namespace vrp_solver

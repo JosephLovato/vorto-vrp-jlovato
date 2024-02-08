@@ -1,4 +1,4 @@
-#include "vsp_solver.hpp"
+#include "vrp_solver.hpp"
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -6,7 +6,7 @@
 #include <unordered_map>
 #include <utility>
 
-void vsp_solver::VSPSolver::load_data(std::fstream &file) {
+void vrp_solver::VRPSolver::load_data(std::fstream &file) {
   std::string line = "";
   getline(file, line);
   while (!file.eof()) {
@@ -44,46 +44,48 @@ void vsp_solver::VSPSolver::load_data(std::fstream &file) {
   // }
 }
 
-int vsp_solver::VSPSolver::total_cost(int number_of_drivers,
-                                      int total_number_of_driven_minutes) {
+double
+vrp_solver::VRPSolver::total_cost(int number_of_drivers,
+                                  double total_number_of_driven_minutes) {
   return (cost_per_driver * number_of_drivers) + total_number_of_driven_minutes;
 }
 
-double vsp_solver::VSPSolver::calculate_total_minutes(
+double vrp_solver::VRPSolver::calculate_total_minutes(
     const std::vector<std::vector<int>> &solution) {
-  double count = 0;
+  double total = 0;
   for (auto &driver_loads : solution) {
     // add the total minutes of a driver's route, if there are any loads
     if (driver_loads.size() > 0) {
       // std::cout << calculate_route_minutes(driver_loads) << std::endl;
-      count += calculate_route_minutes(driver_loads);
+      total += calculate_route_minutes(driver_loads);
     }
   }
-  return count;
+  return total;
 }
 
 double
-vsp_solver::VSPSolver::calculate_route_minutes(const std::vector<int> &route) {
-  double count = 0;
+vrp_solver::VRPSolver::calculate_route_minutes(const std::vector<int> &route) {
   if (route.size() == 0)
-    return count;
-  count += distance_between(ZeroPoint, loads[route[0]].pickup);
+    return 0;
+
+  double total = 0;
   // walk along the route, starting at (0,0)
+  total += distance_between(ZeroPoint, loads[route[0]].pickup);
   for (int i = 0; i < int(route.size() - 1); i++) {
     // distance for this load (pickup to dropoff)
-    count += distance_between(loads[route[i]].pickup, loads[route[i]].dropoff);
+    total += distance_between(loads[route[i]].pickup, loads[route[i]].dropoff);
     // distance to next pickup
-    count +=
+    total +=
         distance_between(loads[route[i]].dropoff, loads[route[i + 1]].pickup);
   }
   // finish with the last load, then back to (0,0)
-  count += distance_between(loads[route[route.size() - 1]].pickup,
+  total += distance_between(loads[route[route.size() - 1]].pickup,
                             loads[route[route.size() - 1]].dropoff);
-  count += distance_between(loads[route[route.size() - 1]].dropoff, ZeroPoint);
-  return count;
+  total += distance_between(loads[route[route.size() - 1]].dropoff, ZeroPoint);
+  return total;
 }
 
-std::vector<std::vector<int>> vsp_solver::VSPSolver::solve() {
+std::vector<std::vector<int>> vrp_solver::VRPSolver::solve() {
   // Based on Clark & Wright Savings Algorithm (as described here:
   // https://web.mit.edu/urban_or_book/www/book/chapter6/6.4.12.html)
 
@@ -154,10 +156,18 @@ std::vector<std::vector<int>> vsp_solver::VSPSolver::solve() {
     }
   }
 
-  return driver_routes;
+  // scrub away all null drivers
+  std::vector<std::vector<int>> solution;
+  for (auto &route : driver_routes) {
+    if (route.size() > 0) {
+      solution.emplace_back(route);
+    }
+  }
+
+  return solution;
 }
 
-void vsp_solver::VSPSolver::print_solution(
+void vrp_solver::VRPSolver::print_solution(
     const std::vector<std::vector<int>> &solution) {
   for (auto &driver_loads : solution) {
     if (driver_loads.size() > 0) {
