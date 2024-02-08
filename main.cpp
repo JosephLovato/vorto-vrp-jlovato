@@ -1,3 +1,12 @@
+/**
+ * Main program for running the VRP solver
+ *
+ * @file main.cpp
+ * @author Joey Lovato (josephlovato.github.io)
+ * @date 2024-02-07
+ *
+ */
+
 #include "vrp_solver.hpp"
 #include <__errc>
 #include <fstream>
@@ -20,11 +29,11 @@ int main(int argc, char *argv[]) {
 
   vrp_solver::VRPSolver vrp_solver(500, 720);
   vrp_solver.load_data(file);
-  auto solution = vrp_solver.solve();
+  auto solution = vrp_solver.solve_savings_algorithm();
+  vrp_solver.print_solution(solution);
   // for (auto &route : solution) {
   //   std::cout << vrp_solver.calculate_route_minutes(route) << std::endl;
   // }
-  vrp_solver.print_solution(solution);
   // double total_minutes = vrp_solver.calculate_total_minutes(solution);
   // std::cout << vrp_solver.total_cost(solution.size(), total_minutes)
   //           << std::endl;

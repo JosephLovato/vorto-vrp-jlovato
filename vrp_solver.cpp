@@ -1,3 +1,14 @@
+/**
+ * (Source code) Solver for the time-limited pickup-dropoff vehicle
+ * routing problem
+ *
+ * @file vrp_solver.cpp
+ * @author Joey Lovato (josephlovato.github.io)
+ * @version 0.1
+ * @date 2024-02-07
+ *
+ */
+
 #include "vrp_solver.hpp"
 #include <fstream>
 #include <iostream>
@@ -85,7 +96,7 @@ vrp_solver::VRPSolver::calculate_route_minutes(const std::vector<int> &route) {
   return total;
 }
 
-std::vector<std::vector<int>> vrp_solver::VRPSolver::solve() {
+std::vector<std::vector<int>> vrp_solver::VRPSolver::solve_savings_algorithm() {
   // Based on Clark & Wright Savings Algorithm (as described here:
   // https://web.mit.edu/urban_or_book/www/book/chapter6/6.4.12.html)
 
