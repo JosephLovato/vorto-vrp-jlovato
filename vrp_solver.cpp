@@ -47,12 +47,6 @@ void vrp_solver::VRPSolver::load_data(std::fstream &file) {
                          std::stod(dropoff_x_string),
                          std::stod(dropoff_y_string)));
   }
-  // for (Load l : loads) {
-  //   std::cout << std::setprecision(std::numeric_limits<double>::max_digits10)
-  //             << l.pickup.x << l.pickup.y << " " << l.dropoff.x <<
-  //             l.dropoff.y
-  //             << std::endl;
-  // }
 }
 
 double
@@ -96,9 +90,11 @@ vrp_solver::VRPSolver::calculate_route_minutes(const std::vector<int> &route) {
   return total;
 }
 
-std::vector<std::vector<int>> vrp_solver::VRPSolver::solve_savings_algorithm() {
+std::vector<std::vector<int>>
+vrp_solver::VRPSolver::solve_savings_algorithm(double lambda) {
   // Based on Clark & Wright Savings Algorithm (as described here:
   // https://web.mit.edu/urban_or_book/www/book/chapter6/6.4.12.html)
+  // and discussions in this paper: https://sci-hub.se/10.2307/40802326
 
   // start with each load getting its own driver
   std::vector<std::vector<int>> driver_routes;
@@ -119,23 +115,27 @@ std::vector<std::vector<int>> vrp_solver::VRPSolver::solve_savings_algorithm() {
       // we have a savings of the trip from load 1 back to Zero
       // plus the distance from Zero to the pickup of load 2,
       // minus the distance we must now go from load 1 dropoff to load 2 pickup
-      double savings_ij = distance_between(loads[i].dropoff, ZeroPoint) +
-                          distance_between(ZeroPoint, loads[j].pickup) -
-                          distance_between(loads[i].dropoff, loads[j].pickup);
-      savings.push_back({i, j, savings_ij});
+      double positive_ij = distance_between(loads[i].dropoff, ZeroPoint) +
+                           distance_between(ZeroPoint, loads[j].pickup);
+      double negative_ij = distance_between(loads[i].dropoff, loads[j].pickup);
+      double savings_ij = positive_ij - negative_ij;
+      double algorithmic_savings_ij = positive_ij - (lambda * negative_ij);
+      savings.push_back({i, j, savings_ij, algorithmic_savings_ij});
 
       // repeat for combining opposite order (2 then 1)
-      double savings_ji = distance_between(loads[j].dropoff, ZeroPoint) +
-                          distance_between(ZeroPoint, loads[i].pickup) -
-                          distance_between(loads[j].dropoff, loads[i].pickup);
-      savings.push_back({j, i, savings_ji});
+      double positive_ji = distance_between(loads[j].dropoff, ZeroPoint) +
+                           distance_between(ZeroPoint, loads[i].pickup);
+      double negative_ji = distance_between(loads[j].dropoff, loads[i].pickup);
+      double savings_ji = positive_ji - negative_ji;
+      double algorithmic_savings_ji = positive_ji - (lambda * negative_ji);
+      savings.push_back({j, i, savings_ji, algorithmic_savings_ji});
     }
   }
 
-  // arrange savings in decreasing magnitude
+  // arrange savings in decreasing magnitude of *algorithmic* savings
   sort(savings.begin(), savings.end(),
        [](PointPairSavings a, PointPairSavings b) {
-         return a.savings > b.savings;
+         return a.algorithmic_savings > b.algorithmic_savings;
        });
 
   for (auto &s : savings) {

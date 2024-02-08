@@ -9,6 +9,8 @@
 
 #include "vrp_solver.hpp"
 #include <__errc>
+#include <algorithm>
+#include <cmath>
 #include <fstream>
 #include <iostream>
 
@@ -27,22 +29,25 @@ int main(int argc, char *argv[]) {
     return -2;
   }
 
-  vrp_solver::VRPSolver vrp_solver(500, 720);
-  vrp_solver.load_data(file);
-  auto solution = vrp_solver.solve_savings_algorithm();
-  vrp_solver.print_solution(solution);
-  // for (auto &route : solution) {
-  //   std::cout << vrp_solver.calculate_route_minutes(route) << std::endl;
-  // }
-  // double total_minutes = vrp_solver.calculate_total_minutes(solution);
-  // std::cout << vrp_solver.total_cost(solution.size(), total_minutes)
-  //           << std::endl;
-  // std::vector<std::vector<int>> other = {
-  //     {1, 2, 3, 4},
-  // };
-  // std::cout << vrp_solver.total_cost(other.size(),
-  //                                    vrp_solver.calculate_total_minutes(other))
-  //           << std::endl;
-  // std::cout << total_minutes << std::endl;
+  vrp_solver::VRPSolver instance(500, 720);
+  instance.load_data(file);
+
+  // select minimum using range of lambda
+  double min_cost = MAXFLOAT;
+  std::vector<std::vector<int>> min_cost_solution;
+  for (double lambda = 0.0; lambda <= 1.0; lambda += 0.05) {
+    auto solution = instance.solve_savings_algorithm(lambda);
+    double total_minutes = instance.calculate_total_minutes(solution);
+    double cost = instance.total_cost(solution.size(), total_minutes);
+    if (cost < min_cost) {
+      min_cost = cost;
+      min_cost_solution = solution;
+    }
+  }
+  instance.print_solution(min_cost_solution);
+
+  // default lambda
+  // auto solution = instance.solve_savings_algorithm(1.0);
+  // instance.print_solution(solution);
   return 0;
 }

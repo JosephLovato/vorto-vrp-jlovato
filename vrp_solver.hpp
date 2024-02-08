@@ -36,6 +36,7 @@ struct PointPairSavings {
   int i;
   int j;
   double savings;
+  double algorithmic_savings; // lambda applied
 };
 
 /**
@@ -99,9 +100,11 @@ public:
   /**
    * Solve the VRP instance with the savings algorithm
    *
+   * @param lambda coefficient to apply to the distance between the dropoff and
+   * pickup of two loads in the savings calculation
    * @return std::vector<std::vector<int>>
    */
-  std::vector<std::vector<int>> solve_savings_algorithm();
+  std::vector<std::vector<int>> solve_savings_algorithm(double lambda);
 
   /**
    * Prints a solution to the VRP
