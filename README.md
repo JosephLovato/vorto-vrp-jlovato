@@ -18,7 +18,7 @@ Execute the following commands (or use your favorite IDE):
 
 `cmake --build .`
 
-The executable will then be available to run with `./vrp` in the main directory.
+The executable will then be available to run with `./vrp [path to input file]` in the main directory.
 
 Alternatively, the source can be explicitly compiled with the following command in the main directory:
 
